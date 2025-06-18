@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>투표 결과</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      padding: 40px;
+      background: #f0f8ff;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: 2rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      font-size: 1.5rem;
+      margin: 15px 0;
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBk4LLdxRY-lNUBXGSOmwI1TQ4x2PU39nU",
+      authDomain: "summer-vote-41730.firebaseapp.com",
+      projectId: "summer-vote-41730",
+      storageBucket: "summer-vote-41730.appspot.com",
+      messagingSenderId: "489725461861",
+      appId: "1:489725461861:web:037ff9ee23eff483154d8c",
+      measurementId: "G-R6G6VFKPJL"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadResults() {
+      const votesSnapshot = await getDocs(collection(db, "votes"));
+      const voteCounts = {};
+
+      votesSnapshot.forEach(doc => {
+        const candidate = doc.data().candidate;
+        voteCounts[candidate] = (voteCounts[candidate] || 0) + 1;
+      });
+
+      const resultList = document.getElementById("results");
+      resultList.innerHTML = "";
+
+      for (const [candidate, count] of Object.entries(voteCounts)) {
+        const li = document.createElement("li");
+        li.textContent = `${candidate}: ${count}표`;
+        resultList.appendChild(li);
+      }
+    }
+
+    window.onload = loadResults;
+  </script>
+</head>
+<body>
+  <h1>투표 결과 집계</h1>
+  <ul id="results">
+    <li>불러오는 중...</li>
+  </ul>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>관리자 로그인 - YOURSSU 2025 투표 결과</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: rgba(193, 230, 178, 0.4);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Noto Sans KR', sans-serif;
+      color: #2a3a1a;
+      text-align: center;
+    }
+    #loginForm, #resultPage {
+      background: rgba(255, 255, 255, 0.7);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      width: 90vw;
+      max-width: 500px;
+    }
+    #resultPage { display: none; }
+    input[type="password"] {
+      width: 80%;
+      padding: 10px;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 12px 30px;
+      font-size: 1.2rem;
+      background-color: #619f3f;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #497b2c;
+    }
+    #chartContainer {
+      margin-top: 20px;
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBk4LLdxRY-lNUBXGSOmwI1TQ4x2PU39nU",
+      authDomain: "summer-vote-41730.firebaseapp.com",
+      projectId: "summer-vote-41730",
+      storageBucket: "summer-vote-41730.appspot.com",
+      messagingSenderId: "489725461861",
+      appId: "1:489725461861:web:037ff9ee23eff483154d8c",
+      measurementId: "G-R6G6VFKPJL"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const candidates = ["Mocha 박상욱", "Ren 허강현", "Eatsteak 구효민"];
+    let voteCounts = {};
+    candidates.forEach(c => voteCounts[c] = 0);
+
+    const votesCol = collection(db, "votes");
+
+    window.onload = () => {
+      document.getElementById('loginBtn').onclick = () => {
+        const pwInput = document.getElementById('password').value;
+        const correctPW = "urssuadmin83"
+        if (pwInput === correctPW) {
+          document.getElementById('loginForm').style.display = 'none';
+          document.getElementById('resultPage').style.display = 'block';
+          initChart();
+        } else {
+          alert("비밀번호가 틀렸습니다.");
+        }
+      }
+    }
+
+    function initChart() {
+      const ctx = document.getElementById('voteChart').getContext('2d');
+      const voteChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: candidates,
+          datasets: [{
+            label: '투표수',
+            data: candidates.map(c => voteCounts[c]),
+            backgroundColor: [
+              'rgba(99, 155, 89, 0.7)',
+              'rgba(129, 199, 132, 0.7)',
+              'rgba(85, 140, 79, 0.7)'
+            ],
+            borderColor: [
+              'rgba(99, 155, 89, 1)',
+              'rgba(129, 199, 132, 1)',
+              'rgba(85, 140, 79, 1)'
+            ],
+            borderWidth: 1,
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              stepSize: 1,
+              ticks: { precision: 0 }
+            }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      onSnapshot(votesCol, (snapshot) => {
+        candidates.forEach(c => voteCounts[c] = 0);
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          if (candidates.includes(data.candidate)) {
+            voteCounts[data.candidate]++;
+          }
+        });
+        voteChart.data.datasets[0].data = candidates.map(c => voteCounts[c]);
+        voteChart.update();
+      });
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="loginForm">
+    <h1>관리자 로그인</h1>
+    <input type="password" id="password" placeholder="비밀번호 입력" />
+    <br />
+    <button id="loginBtn">로그인</button>
+  </div>
+
+  <div id="resultPage">
+    <h1>2025 YOURSSU 정기선거 투표 결과</h1>
+    <div id="chartContainer">
+      <canvas id="voteChart"></canvas>
+    </div>
+  </div>
+</body>
+</html>

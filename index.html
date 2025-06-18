@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>2025 YOURSSU 정기 선거 투표</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: rgba(173, 216, 230, 0.4);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Noto Sans KR', sans-serif;
+      color: #333;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      font-weight: 700;
+    }
+
+    form {
+      background: rgba(255, 255, 255, 0.8);
+      padding: 25px 40px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-size: 1.3rem;
+      margin: 12px 0;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    input[type="radio"] {
+      margin-right: 12px;
+      transform: scale(1.3);
+      vertical-align: middle;
+    }
+
+    /* 버튼을 블록으로 만들고 좌우 마진 자동으로 가운데 정렬 */
+    button {
+      margin-top: 25px;
+      padding: 12px 30px;
+      font-size: 1.2rem;
+      background-color: #007BFF;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    button:disabled {
+      background-color: gray;
+      cursor: not-allowed;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #0056b3;
+    }
+
+    .logo {
+      margin-top: 50px;
+      width: 120px;
+      opacity: 0.7;
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBk4LLdxRY-lNUBXGSOmwI1TQ4x2PU39nU",
+      authDomain: "summer-vote-41730.firebaseapp.com",
+      projectId: "summer-vote-41730",
+      storageBucket: "summer-vote-41730.appspot.com",
+      messagingSenderId: "489725461861",
+      appId: "1:489725461861:web:037ff9ee23eff483154d8c",
+      measurementId: "G-R6G6VFKPJL"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function submitVote() {
+      if (localStorage.getItem('voted')) {
+        alert("이미 투표하셨습니다!");
+        return;
+      }
+
+      const selected = document.querySelector('input[name="candidate"]:checked');
+      if (!selected) {
+        alert("후보자를 선택해주세요.");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "votes"), {
+          candidate: selected.value,
+          timestamp: Date.now()
+        });
+        localStorage.setItem('voted', 'true');
+        alert("투표가 완료되었습니다. 감사합니다!");
+        document.getElementById("voteBtn").disabled = true;
+      } catch (e) {
+        alert("투표 중 오류가 발생했습니다.");
+        console.error(e);
+      }
+    }
+
+    window.submitVote = submitVote;
+  </script>
+</head>
+<body>
+  <h1>2025 YOURSSU 정기선거 투표</h1>
+
+  <form>
+    <label><input type="radio" name="candidate" value="Mocha 박상욱" /> Mocha 박상욱 </label>
+    <label><input type="radio" name="candidate" value="Ren 허강현" /> Ren 허강현 </label>
+    <label><input type="radio" name="candidate" value="Eatsteak 구효민" /> Eatsteak 구효민 </label>
+    <button type="button" id="voteBtn" onclick="submitVote()">투표하기</button>
+  </form>
+
+  <img src="유어슈로고.png" alt="YOURSSU 로고" class="logo" />
+</body>
+</html>
